@@ -15,10 +15,13 @@
 #ifndef XLS_PASSES_LUT_CONVERSION_PASS_H_
 #define XLS_PASSES_LUT_CONVERSION_PASS_H_
 
+#include <cstdint>
 #include <string_view>
+#include <vector>
 
 #include "absl/status/statusor.h"
 #include "xls/ir/function_base.h"
+#include "xls/ir/node.h"
 #include "xls/passes/optimization_pass.h"
 #include "xls/passes/pass_base.h"
 
@@ -155,6 +158,7 @@ namespace xls {
 // The resulting `select` directly maps `x` to the output, effectively
 // converting the `add` and original `select` into a single, more efficient LUT
 // implementation.
+
 class LutConversionPass : public OptimizationFunctionBasePass {
  public:
   static constexpr std::string_view kName = "lut_conversion";
@@ -170,6 +174,14 @@ class LutConversionPass : public OptimizationFunctionBasePass {
   absl::StatusOr<bool> RunOnFunctionBaseInternal(
       FunctionBase* f, const OptimizationPassOptions& options,
       PassResults* results, OptimizationContext& context) const override;
+};
+
+// Candidates for LUT conversion. Only select nodes are supported currently.
+struct LutConversionCandidate {
+  Node* node;
+  std::vector<Node*> min_cut;
+  std::vector<Node*> candidate_users;
+  int64_t min_cut_unknown_bits;
 };
 
 }  // namespace xls
